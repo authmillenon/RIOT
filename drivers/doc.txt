@@ -25,6 +25,7 @@
  * @defgroup    drivers_netdev Network Device Drivers
  * @ingroup     drivers
  * @brief       Drivers for external network devices.
+ * @todo        Provide overview guide how to port for network stacks
  */
 
 /**

@@ -15,6 +15,9 @@ to `RIOT`, the different files as well as their functionality.
 @note We assume here that your `CPU` and `CPU_MODEL` is already supported
 in `RIOT` so no peripheral or cpu implementation is needed.
 
+# Porting flowchart
+@dotfile porting-boards.dot
+
 # General structure                                         {#general-structure}
 
 Like @ref creating-an-application "applications" or @ref creating-modules
@@ -334,3 +337,10 @@ Some scripts and tools available to ease `BOARD` porting and testing:
 
   - Run `dist/tools/compile_and_test_for_board/compile_and_test_for_board.py . <board> --with-test-only`
     to run all automated tests on the new board.
+
+# Further reference                                         {#further-reference}
+
+- [In her blog][martines-blog], Martine Lenders documented her approach of
+  porting the @ref boards_feather-nrf52840 in February 2020.
+
+[martines-blog]: https://blog.martine-lenders.eu/riot-board-en.html

@@ -15,7 +15,7 @@ to `RIOT`, the different files as well as their functionality.
 @note We assume here that your `CPU` and `CPU_MODEL` is already supported
 in `RIOT` so no peripheral or cpu implementation is needed.
 
-# Porting flowchart
+# Porting flowchart                                         {#porting-flowchart}
 @dotfile porting-boards.dot
 
 # General structure                                         {#general-structure}

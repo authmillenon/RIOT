@@ -21,7 +21,12 @@ strict digraph {
   ];
 
   Start [shape="Mrecord", width=0.75];
-  End [shape="Mrecord", width=0.75];
+  End [
+    label="Blink the LEDs",
+    tooltip="Blink the LEDs",
+    shape="Mrecord",
+    URL="https://github.com/RIOT-OS/RIOT/tree/master/tests/leds",
+  ];
 
   IfCPU [
     label=<CPU/MCU<BR/>already ported?>,

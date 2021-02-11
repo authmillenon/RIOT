@@ -20,18 +20,50 @@ strict digraph {
     labelfloat=true,
   ];
 
-  Start[shape="Mrecord", width=0.75];
-  End[shape="Mrecord", width=0.75];
+  Start [shape="Mrecord", width=0.75];
+  End [shape="Mrecord", width=0.75];
 
-  IfCPU[label=<CPU/MCU<BR/>already ported?>, shape="diamond"];
-  IfBoard[label=<Board definitions<BR/>already provided?>, shape="diamond"];
-  IfDrivers[label=<All on-board<BR/>devices supported?>, shape="diamond"];
-  IfNetdev[label=<Network device<BR/>supported by<BR/>network stack?>, shape="diamond"];
+  IfCPU [
+    label=<CPU/MCU<BR/>already ported?>,
+    tooltip="CPU/MCU already ported?",
+    shape="diamond",
+  ];
+  IfBoard [
+    label=<Board definitions<BR/>already provided?>,
+    tooltip="Board definitions already provided?",
+    shape="diamond",
+  ];
+  IfDrivers [
+    label=<All on-board<BR/>devices supported?>,
+    tooltip="All on-board devices supported?",
+    shape="diamond",
+  ];
+  IfNetdev [
+    label=<Network device<BR/>supported by<BR/>network stack?>,
+    tooltip="Network device supported by network stack?",
+    shape="diamond"
+  ];
 
-  PortCPU[label=<Port <B>CPU</B>>, URL="porting-cpus.html"];
-  PortBoard[label=<Provide<BR/><B>board definitions</B>>, URL="porting-boards.html"];
-  PortDrivers[label=<Provide<BR/><B>device drivers</B>>, URL="driver-guide.html"];
-  PortNetdev[label=<Provide <B>network device support</B><BR/>for network stack>, URL="group__drivers__netdev.html"];
+  PortCPU [
+    label=<Port <B>CPU</B>>,
+    tooltip="Port CPU",
+    URL="@ref porting-cpus",
+  ];
+  PortBoard [
+    label=<Provide<BR/><B>board definitions</B>>,
+    tooltip="Provide board definitions",
+    URL="@ref porting-boards",
+  ];
+  PortDrivers [
+    label=<Provide<BR/><B>device drivers</B>>,
+    tooltip="Provide device drivers",
+    URL="@ref driver-guide",
+  ];
+  PortNetdev [
+    label=<Provide <B>network device support</B><BR/>for network stack>,
+    tooltip="Provide network device support for network stack",
+    URL="@ref drivers_netdev",
+  ];
 
   Start -> IfCPU;
   IfCPU -> IfBoard [label="Yes"];

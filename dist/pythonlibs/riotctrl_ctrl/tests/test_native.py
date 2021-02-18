@@ -6,6 +6,8 @@
 
 import os.path
 
+import riotctrl.ctrl
+
 import riotctrl_ctrl.native
 
 
@@ -29,3 +31,15 @@ def test_reset():
         ctrl.reset()
         ctrl.term.expect_exact('!! REBOOT !!')
         ctrl.term.expect_exact('Hello World!')
+
+
+def test_w_factory():
+    env = {'BOARD': 'native'}
+    factory = riotctrl.ctrl.RIOTCtrlBoardFactory(
+        board_cls={'native': riotctrl_ctrl.native.NativeRIOTCtrl}
+    )
+    assert 'native' in factory.board_cls
+    ctrl = factory.get_ctrl(env=env)
+    # pylint: disable=unidiomatic-typecheck
+    # in this case we want to know the exact type
+    assert type(ctrl) is riotctrl_ctrl.native.NativeRIOTCtrl

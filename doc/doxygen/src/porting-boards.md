@@ -342,5 +342,8 @@ Some scripts and tools available to ease `BOARD` porting and testing:
 
 - [In her blog][martines-blog], Martine Lenders documented her approach of
   porting the @ref boards_feather-nrf52840 in February 2020.
+- [Over at HackMD][hackmd-slstk3400a], Akshai M documented his approach of
+  porting the @ref boards_slstk3400a in July 2020.
 
 [martines-blog]: https://blog.martine-lenders.eu/riot-board-en.html
+[hackmd-slstk3400a]: https://hackmd.io/njFHwQ33SNS3sQKAkLkNtQ

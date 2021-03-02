@@ -11,7 +11,6 @@ import sys
 import unittest
 
 from riotctrl.ctrl import RIOTCtrl
-from riotctrl.shell import ShellInteraction
 from riotctrl.shell.json import RapidJSONShellInteractionParser, rapidjson
 
 from riotctrl_shell.congure_test import CongureTest

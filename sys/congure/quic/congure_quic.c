@@ -62,8 +62,7 @@ static void _on_congestion_event(congure_quic_snd_t *c, ztimer_now_t sent_time)
     c->ssthresh = (c->super.cwnd * c->consts->loss_reduction_numerator) /
                   c->consts->loss_reduction_denominator;
     c->super.cwnd = (c->ssthresh > c->consts->min_wnd)
-                  ? c->ssthresh
-                  : c->consts->min_wnd;
+                    ? c->ssthresh : c->consts->min_wnd;
     if (c->consts->cong_event_cb) {
         c->consts->cong_event_cb(c->super.ctx);
     }

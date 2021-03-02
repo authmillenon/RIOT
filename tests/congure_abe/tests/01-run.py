@@ -10,38 +10,51 @@ import logging
 import unittest
 
 from riotctrl.ctrl import RIOTCtrl
-from riotctrl.shell import ShellInteraction
 from riotctrl.shell.json import RapidJSONShellInteractionParser, rapidjson
+
+from riotctrl_shell.congure_test import CongureTest
 
 
 class TestCongUREBase(unittest.TestCase):
     # pylint: disable=too-many-public-methods
     # it's just one more ...
+    DEBUG = False
+
     @classmethod
     def setUpClass(cls):
         cls.ctrl = RIOTCtrl()
         cls.ctrl.start_term()
+        if cls.DEBUG:
+            cls.ctrl.term.logfile = sys.stdout
         cls.ctrl.reset()
-        cls.shell = ShellInteraction(cls.ctrl)
+        cls.shell = CongureTest(cls.ctrl)
         cls.json_parser = RapidJSONShellInteractionParser()
         cls.json_parser.set_parser_args(
             parse_mode=rapidjson.PM_TRAILING_COMMAS
         )
         cls.logger = logging.getLogger(cls.__name__)
+        if cls.DEBUG:
+            cls.logger.setLevel(logging.DEBUG)
 
     @classmethod
     def tearDownClass(cls):
         cls.ctrl.stop_term()
 
     def setUp(self):
-        self.shell.cmd('cong_clear')
+        self.shell.clear()
 
-    def exec_cmd(self, cmd, timeout=-1, async_=False):
-        res = self.shell.cmd(cmd, timeout, async_)
+    def tearDown(self):
+        self.shell.msgs_reset()
+
+    def _parse(self, res):
         self.logger.debug(res)
         if res.strip():
             return self.json_parser.parse(res)
         return None
+
+    def exec_cmd(self, cmd, timeout=-1, async_=False):
+        res = self.shell.cmd(cmd, timeout, async_)
+        return self._parse(res)
 
     def assertSlowStart(self, state):
         # pylint: disable=invalid-name
@@ -85,25 +98,20 @@ class TestCongUREBase(unittest.TestCase):
         return self.exec_cmd('state')
 
     def cong_init(self, ctx=0):
-        return self.exec_cmd(f'cong_init 0x{ctx:x}')
-
-    def cong_report(self, cmd, *args):
-        args = ' '.join(str(a) for a in args)
-        return self.exec_cmd(f'cong_report {cmd} {args}')
+        res = self.shell.init(ctx)
+        return self._parse(res)
 
     def cong_report_msg_sent(self, msg_size):
-        return self.cong_report('msg_sent', msg_size)
+        res = self.shell.report_msg_sent(msg_size)
+        return self._parse(res)
 
     def cong_report_msg_acked(self, msg, ack):
-        if isinstance(ack['clean'], bool):
-            ack['clean'] = int(ack['clean'])
-        return self.cong_report('msg_acked', msg['send_time'], msg['size'],
-                                msg['resends'], ack['recv_time'], ack['id'],
-                                ack['size'], ack['clean'], ack['wnd'],
-                                ack['delay'])
+        res = self.shell.report_msg_acked(msg, ack)
+        return self._parse(res)
 
     def cong_report_ecn_ce(self, time):
-        return self.cong_report('ecn_ce', time)
+        res = self.shell.report_ecn_ce(time)
+        return self._parse(res)
 
 
 class TestCongUREABEWithoutSetup(TestCongUREBase):
@@ -123,8 +131,8 @@ class TestCongUREABEWithoutSetup(TestCongUREBase):
 class TestCongUREABEDefaultInitTests(TestCongUREBase):
     def setUp(self):
         super().setUp()
-        res = self.exec_cmd('cong_setup 0')
-        self.assertIn('setup', res)
+        res = self.shell.setup(0)
+        self.assertIn('success', res)
 
     def test_setup(self):
         state = self.cong_state()
@@ -167,7 +175,7 @@ class TestCongUREABEDefaultInitTests(TestCongUREBase):
         >     IW = 4 * SMSS bytes and MUST NOT be more than 4 segments
         """
         res = self.cong_init()
-        self.assertIsNone(res)
+        self.assertIn('success', res)
         state = self.cong_state()
         self.assertEqual(state['consts']['init_mss'], state['mss'])
         # (SMSS > 1095 bytes)
@@ -189,8 +197,7 @@ class TestCongUREABE(TestCongUREBase):
     """
     def setUp(self):
         super().setUp()
-        res = self.exec_cmd('cong_setup 0')
-        self.assertIn('setup', res)
+        res = self.shell.setup(0)
         self.cong_init()
 
     def _send_msg_and_recv_ack(self, msg_size, msg_resends=0,
@@ -202,7 +209,7 @@ class TestCongUREABE(TestCongUREBase):
             # set ack_size to arbitrary value
             ack_size = msg_size
         res = self.cong_report_msg_sent(msg_size=msg_size)
-        self.assertIsNone(res)
+        self.assertIn('success', res)
         state = self.cong_state()
         self.assertEqual(state['in_flight_size'], msg_size)
         res = self.cong_report_msg_acked(
@@ -210,7 +217,7 @@ class TestCongUREABE(TestCongUREBase):
             ack={'recv_time': 1100, 'id': ack_id, 'size': ack_size,
                  'clean': ack_clean, 'wnd': 1234, 'delay': 0},
         )
-        self.assertIsNone(res)
+        self.assertIn('success', res)
 
     def test_slow_start_increase(self):
         # pylint: disable=invalid-name
@@ -260,7 +267,7 @@ class TestCongUREABE(TestCongUREBase):
                 ack={'recv_time': 1100, 'id': 15, 'size': 0,
                      'clean': True, 'wnd': 1234, 'delay': 0},
             )
-            self.assertIsNone(res)
+            self.assertIn('success', res)
         self.assertEqual(1, self.get_ff_calls())
         self.assertInFastRetransmit(self.cong_state())
 

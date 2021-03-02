@@ -17,7 +17,7 @@ from riotctrl_shell.congure_test import CongureTest
 
 
 class TestCongUREBase(unittest.TestCase):
-    DEBUG = True
+    DEBUG = False
 
     # pylint: disable=too-many-public-methods
     # it's just one more ...

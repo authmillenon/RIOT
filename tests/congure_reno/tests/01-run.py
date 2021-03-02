@@ -11,8 +11,9 @@ import sys
 import unittest
 
 from riotctrl.ctrl import RIOTCtrl
-from riotctrl.shell import ShellInteraction
 from riotctrl.shell.json import RapidJSONShellInteractionParser, rapidjson
+
+from riotctrl_shell.congure_test import CongureTest
 
 
 class TestCongUREBase(unittest.TestCase):
@@ -27,7 +28,7 @@ class TestCongUREBase(unittest.TestCase):
         if cls.DEBUG:
             cls.ctrl.term.logfile = sys.stdout
         cls.ctrl.reset()
-        cls.shell = ShellInteraction(cls.ctrl)
+        cls.shell = CongureTest(cls.ctrl)
         cls.json_parser = RapidJSONShellInteractionParser()
         cls.json_parser.set_parser_args(
             parse_mode=rapidjson.PM_TRAILING_COMMAS
@@ -41,14 +42,20 @@ class TestCongUREBase(unittest.TestCase):
         cls.ctrl.stop_term()
 
     def setUp(self):
-        self.shell.cmd('cong_clear')
+        self.shell.clear()
 
-    def exec_cmd(self, cmd, timeout=-1, async_=False):
-        res = self.shell.cmd(cmd, timeout, async_)
+    def tearDown(self):
+        self.shell.msgs_reset()
+
+    def _parse(self, res):
         self.logger.debug(res)
         if res.strip():
             return self.json_parser.parse(res)
         return None
+
+    def exec_cmd(self, cmd, timeout=-1, async_=False):
+        res = self.shell.cmd(cmd, timeout, async_)
+        return self._parse(res)
 
     def assertSlowStart(self, state):
         # pylint: disable=invalid-name
@@ -94,55 +101,47 @@ class TestCongUREBase(unittest.TestCase):
         return res['fr_calls']
 
     def set_same_wnd_adv(self, value):
-        self.exec_cmd(f'set_same_wnd_adv {value:d}')
+        self.exec_cmd('set_same_wnd_adv {value:d}'.format(value=value))
 
     def set_mss(self, mss):
-        self.exec_cmd(f'set_mss {mss}')
+        self.exec_cmd('set_mss {mss}'.format(mss=mss))
 
     def set_cwnd(self, cwnd):
-        self.exec_cmd(f'set_cwnd {cwnd}')
+        self.exec_cmd('set_cwnd {cwnd}'.format(cwnd=cwnd))
 
     def set_ssthresh(self, ssthresh):
-        self.exec_cmd(f'set_ssthresh {ssthresh}')
+        self.exec_cmd('set_ssthresh {ssthresh}'.format(ssthresh=ssthresh))
 
     def cong_state(self):
         return self.exec_cmd('state')
 
     def cong_init(self, ctx=0):
-        return self.exec_cmd(f'cong_init 0x{ctx:x}')
-
-    def cong_report(self, cmd, *args):
-        args = ' '.join(str(a) for a in args)
-        return self.exec_cmd(f'cong_report {cmd} {args}')
+        res = self.shell.init(ctx)
+        return self._parse(res)
 
     def cong_report_msg_sent(self, msg_size):
-        return self.cong_report('msg_sent', msg_size)
+        res = self.shell.report_msg_sent(msg_size)
+        return self._parse(res)
 
     def cong_report_msg_discarded(self, msg_size):
-        return self.cong_report('msg_discarded', msg_size)
-
-    def _report_msgs_timeout_lost(self, cmd, msgs):
-        args = []
-        for msg in msgs:
-            args.extend((msg['send_time'], msg['size'], msg['resends']))
-        return self.cong_report(cmd, *args)
+        res = self.shell.report_msg_discarded(msg_size)
+        return self._parse(res)
 
     def cong_report_msgs_timeout(self, msgs):
-        return self._report_msgs_timeout_lost('msgs_timeout', msgs)
+        res = self.shell.report_msgs_timeout(msgs)
+        return self._parse(res)
 
     def cong_report_msgs_lost(self, msgs):
-        return self._report_msgs_timeout_lost('msgs_lost', msgs)
+        res = self.shell.report_msgs_lost(msgs)
+        return self._parse(res)
 
     def cong_report_msg_acked(self, msg, ack):
-        if isinstance(ack['clean'], bool):
-            ack['clean'] = int(ack['clean'])
-        return self.cong_report('msg_acked', msg['send_time'], msg['size'],
-                                msg['resends'], ack['recv_time'], ack['id'],
-                                ack['size'], ack['clean'], ack['wnd'],
-                                ack['delay'])
+        res = self.shell.report_msg_acked(msg, ack)
+        return self._parse(res)
 
     def cong_report_ecn_ce(self, time):
-        return self.cong_report('ecn_ce', time)
+        res = self.shell.report_ecn_ce(time)
+        return self._parse(res)
 
     def _send_msg_and_recv_ack(self, msg_size, msg_resends=0,
                                ack_id=15, ack_size=None, ack_clean=True):
@@ -161,6 +160,10 @@ class TestCongUREBase(unittest.TestCase):
             ack={'recv_time': 1100, 'id': ack_id, 'size': ack_size,
                  'clean': ack_clean, 'wnd': 1234, 'delay': 0},
         )
+        self.assertIn('success', res)
+        # this method is reused a lot, so reset internal message buffer of
+        # `congure_test`
+        res = self._parse(self.shell.msgs_reset())
         self.assertIn('success', res)
 
 

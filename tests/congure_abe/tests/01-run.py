@@ -7,6 +7,7 @@
 # directory for more details.
 
 import logging
+import sys
 import unittest
 
 from riotctrl.ctrl import RIOTCtrl
@@ -198,7 +199,9 @@ class TestCongUREABE(TestCongUREBase):
     def setUp(self):
         super().setUp()
         res = self.shell.setup(0)
-        self.cong_init()
+        self.assertIn('success', res)
+        res = self.cong_init()
+        self.assertIn('success', res)
 
     def _send_msg_and_recv_ack(self, msg_size, msg_resends=0,
                                ack_id=15, ack_size=None, ack_clean=True):

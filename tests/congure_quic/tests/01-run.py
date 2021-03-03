@@ -156,7 +156,7 @@ class TestCongUREBase(unittest.TestCase):
 
 class TestCongUREQUICWithoutSetup(TestCongUREBase):
     def test_no_setup(self):
-        state = self.exec_cmd('state')
+        state = self.cong_state()
         self.assertEqual(state, {
             'ctx': '0x00000000',
             'cwnd': 0,
@@ -183,7 +183,7 @@ class TestCongUREQUICDefaultInitTests(TestCongUREBase):
     """
     def setUp(self):
         super().setUp()
-        res = self.exec_cmd('cong_setup 0')
+        res = self._parse(self.shell.setup(0))
         self.assertIn('success', res)
 
     def test_setup(self):
@@ -263,7 +263,7 @@ class TestCongUREQUICDefault(TestCongUREBase):
     """
     def setUp(self):
         super().setUp()
-        res = self.exec_cmd('cong_setup 0')
+        res = self._parse(self.shell.setup(0))
         self.assertIn('success', res)
         res = self.cong_init()
         self.assertIn('success', res)
@@ -845,7 +845,7 @@ class TestCongUREQUICDefault(TestCongUREBase):
 class TestCongUREQUICEventCb(TestCongUREQUICDefault):
     def setUp(self):
         super().setUp()
-        res = self.exec_cmd('cong_setup 1')
+        res = self._parse(self.shell.setup(1))
         self.assertIn('success', res)
         res = self.cong_init(0xdead)
         self.assertIn('success', res)

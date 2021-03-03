@@ -184,7 +184,7 @@ class TestCongURERenoWithoutSetup(TestCongUREBase):
 class TestCongURERenoDefaultInitTests(TestCongUREBase):
     def setUp(self):
         super().setUp()
-        res = self.exec_cmd('cong_setup 0')
+        res = self.shell.setup(0)
         self.assertIn('success', res)
 
     def test_setup(self):
@@ -237,7 +237,7 @@ class TestCongURERenoDefaultInitTests(TestCongUREBase):
 class TestCongURERenoDefault(TestCongUREBase):
     def setUp(self):
         super().setUp()
-        res = self.exec_cmd('cong_setup 0')
+        res = self.shell.setup(0)
         self.assertIn('success', res)
         res = self.cong_init()
         self.assertIn('success', res)
@@ -774,8 +774,8 @@ class TestCongURERenoDefault(TestCongUREBase):
 
 class TestCongURERenoCustomIncDec(TestCongUREBase):
     def setUp(self):
-        super().setUp()
-        res = self.exec_cmd('cong_setup 1')
+        self.shell.clear()
+        res = self.shell.setup(1)
         self.assertIn('success', res)
         res = self.cong_init()
         self.assertIn('success', res)

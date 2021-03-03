@@ -94,7 +94,7 @@ Github][releases] as ZIP file or tarball. You can also checkout a release using
 $ git checkout <YYYY.MM>
 ```
 
-in Git, when `<YYYY.MM>` is replaced with the release name.
+in Git, where `<YYYY.MM>` is the release name.
 
 Note, that RIOT follows a rolling release cycle, meaning, that only for the most
 current release support and bug fixes are provided. For major bug fixes, we may

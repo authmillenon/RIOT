@@ -1,8 +1,7 @@
-Basic tests for the CongURE API
-===============================
+Tests for the CongURE QUIC implementation
+=========================================
 
-This test tests the `congure_test` test framework used for the other CongURE
-tests.
+This test tests the `congure_quic` implementation.
 
 Usage
 -----
@@ -22,17 +21,8 @@ $ BOARD="<board>" make flash test
 It can also executed with pytest:
 
 ```console
-$ PYTHONPATH=../../dist/pythonlibs pytest tests/01-run.py
+$ pytest tests/01-run.py
 ```
-
-Note that this only works from within the directory of the test, so if you are
-somewhere else, use
-
-```console
-$ cd tests/congure_test
-```
-
-first to change into that.
 
 Expected result
 ---------------

@@ -21,10 +21,16 @@ USEMODULE += fmt
 ifeq (,$(CONGURE_IMPL))
   USEMODULE += gnrc_sixlowpan_frag_sfr_congure_sfr
 else
+ifeq (congure_quic,$(CONGURE_IMPL))
+  USEMODULE += gnrc_sixlowpan_frag_sfr_congure_quic
+  USEMODULE += ztimer_msec
+  USEMODULE += ztimer_periph_rtt
+else
 ifeq (congure_sfr,$(CONGURE_IMPL))
   USEMODULE += gnrc_sixlowpan_frag_sfr_congure_sfr
 else
   $(error "Unknown CongURE implementation `$(CONGURE_IMPL)`")
+endif
 endif
 endif
 

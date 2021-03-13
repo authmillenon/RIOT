@@ -466,7 +466,7 @@ static int _report_non_ack_req_window_sent(clist_node_t *node, void *fbuf_ptr)
 
 void gnrc_sixlowpan_frag_sfr_arq_timeout(gnrc_sixlowpan_frag_fb_t *fbuf)
 {
-    uint32_t now = xtimer_now_usec();
+    uint32_t now = xtimer_now_usec() / US_PER_MS;
     _frag_desc_t * const head = (_frag_desc_t *)fbuf->sfr.window.next;
     _frag_desc_t *frag_desc = head;
     uint32_t next_arq_offset = fbuf->sfr.arq_timeout;
@@ -487,10 +487,10 @@ void gnrc_sixlowpan_frag_sfr_arq_timeout(gnrc_sixlowpan_frag_fb_t *fbuf)
 
             frag_desc = (_frag_desc_t *)frag_desc->super.super.next;
             diff = now - frag_desc->super.send_time;
-            if (diff < (fbuf->sfr.arq_timeout * US_PER_MS)) {
+            if (diff < fbuf->sfr.arq_timeout) {
                 /* this fragment's last was last sent < fbuf->sfr.arq_timeout
                  * ago */
-                uint32_t offset = fbuf->sfr.arq_timeout - (diff / US_PER_MS);
+                uint32_t offset = fbuf->sfr.arq_timeout - diff;
 
                 DEBUG("6lo sfr: wait for fragment %u in next reschedule\n",
                       _frag_seq(frag_desc));
@@ -827,7 +827,7 @@ static bool _send_fragment(gnrc_pktsnip_t *frag, gnrc_sixlowpan_frag_fb_t *fbuf,
         if (IS_USED(MODULE_GNRC_SIXLOWPAN_FRAG_SFR_STATS)) {
             _stats.fragments_sent.usual++;
         }
-        frag_desc->super.send_time = _last_frame_sent;
+        frag_desc->super.send_time = _last_frame_sent / US_PER_MS;
         fbuf->sfr.cur_seq++;
         fbuf->sfr.frags_sent++;
     }
@@ -1477,7 +1477,7 @@ static int _resend_frag(clist_node_t *node, void *fbuf_ptr)
           (sixlowpan_sfr_rfrag_get_seq(hdr)) ? "offset" : "datagram_size",
           sixlowpan_sfr_rfrag_get_offset(hdr));
     if (_send_frame(frag, fbuf, NULL, 0)) {
-        frag_desc->super.send_time = _last_frame_sent;
+        frag_desc->super.send_time = _last_frame_sent / US_PER_MS;
         return 0;
     }
     else {
@@ -1680,7 +1680,7 @@ static void _handle_ack(gnrc_netif_hdr_t *netif_hdr, gnrc_pktsnip_t *pkt,
             else {
                 /* Check and resent failed fragments within the current window
                  */
-               _check_failed_frags(hdr, fbuf, recv_time);
+               _check_failed_frags(hdr, fbuf, recv_time / US_PER_MS);
             }
         }
         else {

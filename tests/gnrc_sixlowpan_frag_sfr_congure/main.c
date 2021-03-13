@@ -45,7 +45,6 @@
 #endif
 #include "utlist.h"
 #include "xtimer.h"
-#include "ztimer.h"
 
 #define SEND_PACKET_TIMEOUT                         (500U)
 
@@ -602,18 +601,18 @@ static void test_sixlo_send__last_ackd_ecn(void)
     congure_mock_snd_t *c;
     congure_snd_msg_t *msgs = NULL;
     BITFIELD(ack_bitmap, 32U) = { 0 };
-    ztimer_now_t pre_ack_time;
+    uint32_t pre_send_time;
     bool sent_frags_correct, ack_received;
     uint8_t tag;
     static const uint8_t ack_req = 1 << TEST_SEND_FRAG_SEQ3;
     static const uint8_t acked_frags = 1 << TEST_SEND_FRAG_SEQ3;
 
+    pre_send_time = xtimer_now_usec() / US_PER_MS;
     _test_initial_send(acked_frags, ack_req, &tag, ack_bitmap,
                        &sent_frags_correct);
     TEST_ASSERT(sent_frags_correct);
     TEST_ASSERT_FBUF_CONGURE_EXISTS(fbuf, c);
     TEST_ASSERT_EQUAL_INT(3U, clist_count(&fbuf->sfr.window));
-    pre_ack_time = ztimer_now(ZTIMER_MSEC);
     _recv_ack(ack_bitmap, tag, true, &ack_received);
     TEST_ASSERT(ack_received);
     /* resend of fragment 1 */
@@ -634,11 +633,11 @@ static void test_sixlo_send__last_ackd_ecn(void)
      * so we can't safely check the contents */
     /* fragment 3 was ACK'd */
     TEST_ASSERT_REPORT_MSG_ACKED(c, 1U);
-    /* report_ecn_ce was called with a timestamp after the time we waited
-     * for the ACK but before now */
+    /* report_ecn_ce was called with a timestamp after the time we sent the
+     * original message */
     TEST_ASSERT_EQUAL_INT(1U, c->report_ecn_ce_calls);
-    TEST_ASSERT(ztimer_now(ZTIMER_MSEC) >= pre_ack_time);
-    TEST_ASSERT(c->report_ecn_ce_args.time >= pre_ack_time);
+    TEST_ASSERT((xtimer_now_usec() / US_PER_MS) >= pre_send_time);
+    TEST_ASSERT(c->report_ecn_ce_args.time >= pre_send_time);
     /* report_msg_sent has been called 5 times:
      * - 3 for each initial send of the fragments
      * - 2 for resends of fragments 2 and 3 which were marked lost in the ACK

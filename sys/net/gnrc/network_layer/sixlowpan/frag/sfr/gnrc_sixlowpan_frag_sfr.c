@@ -525,13 +525,6 @@ void gnrc_sixlowpan_frag_sfr_arq_timeout(gnrc_sixlowpan_frag_fb_t *fbuf)
                     else {
                         if (IS_USED(MODULE_GNRC_SIXLOWPAN_FRAG_SFR_CONGURE)) {
                             gnrc_sixlowpan_frag_sfr_congure_snd_report_frag_sent(fbuf);
-                            /* report all non-ack_req fragments in window also
-                             * as sent, since even the lost fragments are still
-                             * in flight (even though they were previously
-                             * marked as timed out) */
-                            clist_foreach(&fbuf->sfr.window,
-                                          _report_non_ack_req_window_sent,
-                                          fbuf);
                         }
                         if (IS_USED(MODULE_GNRC_SIXLOWPAN_FRAG_SFR_STATS)) {
                             /* fragment was resent successfully, note this done
@@ -568,6 +561,10 @@ void gnrc_sixlowpan_frag_sfr_arq_timeout(gnrc_sixlowpan_frag_fb_t *fbuf)
                       _frag_seq(frag_desc));
             }
         } while (frag_desc != head);
+        /* report all non-ack_req fragments in window also as sent, since even
+         * the lost fragments are still in flight (even though they were
+         * previously marked as timed out) */
+        clist_foreach(&fbuf->sfr.window, _report_non_ack_req_window_sent, fbuf);
     }
     else {
         /* No fragments to resend, we can assume the packet was delivered

@@ -50,7 +50,10 @@ congure_snd_t *gnrc_sixlowpan_frag_sfr_congure_snd_get(void)
 
 static void _fr(congure_reno_snd_t *c)
 {
-    gnrc_sixlowpan_frag_sfr_arq_timeout(c->super.ctx);
+    (void)c;
+    /* SFR resends when fast retransmits needs to be done anyways so
+     * do nothing */
+    return;
 }
 
 static bool _same_wnd_adv(congure_reno_snd_t *c, congure_snd_ack_t *ack)
